@@ -225,6 +225,22 @@
     background-repeat: no-repeat !important;
     background-position: right 12px center !important;
     background-size: 20px !important;
+    padding-right: 38px !important;
+  }
+
+  /* Modal select trong dark mode */
+  .modal-content select {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-color: var(--input-bg) !important;
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg fill="%23FDBA74" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>') !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 20px !important;
+    padding-right: 38px !important;
+    color: var(--text-primary) !important;
+    border-color: var(--input-border) !important;
   }
 }
 
@@ -974,6 +990,19 @@ label {
   transition: all var(--transition-base);
   background: var(--background-color);
   color: var(--text-color);
+}
+
+.modal-content select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding-right: 38px;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg fill="%23EA580C" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+  background-color: var(--background-color);
+  cursor: pointer;
 }
 
 .modal-content textarea {
