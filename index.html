@@ -62,9 +62,7 @@
         <p style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-secondary); font-weight: 600;">Đang tải dữ liệu, vui lòng chờ...</p>
       </div>
       <div class="input-group">
-        <div class="date-input-wrapper">
-          <input type="date" id="transactionDate">
-        </div>
+        <input type="date" id="transactionDate">
         <button id="fetchTransactionsBtn"><i class="fas fa-filter"></i> Lọc</button>
         <button id="addTransactionBtn"><i class="fas fa-plus"></i> Thêm</button>
       </div>
@@ -328,9 +326,7 @@
           <label for="editTransactionId">Mã giao dịch:</label>
           <input type="text" id="editTransactionId" readonly>
           <label for="editDate">Ngày:</label>
-          <div class="date-input-wrapper">
-            <input type="date" id="editDate" required>
-          </div>
+          <input type="date" id="editDate" required>
           <label for="editContent">Nội dung:</label>
           <input type="text" id="editContent" placeholder="Nhập nội dung giao dịch" required>
           <label for="editAmount">Số tiền:</label>
@@ -358,9 +354,7 @@
         <div id="addError" class="error-message"></div>
         <form id="addForm">
           <label for="addDate">Ngày:</label>
-          <div class="date-input-wrapper">
-            <input type="date" id="addDate" required>
-          </div>
+          <input type="date" id="addDate" required>
           <label for="addContent">Nội dung:</label>
           <input type="text" id="addContent" placeholder="Nhập nội dung giao dịch" required>
           <label for="addAmount">Số tiền:</label>
