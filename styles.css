@@ -631,7 +631,7 @@ select {
   -moz-appearance: none;
   appearance: none;
   padding-right: 38px; /* Tăng padding-right để tạo khoảng cách cho icon */
-  background-image: url('data:image/svg+xml;charset=UTF-8,<svg fill="%236366F1" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg fill="%23EA580C" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
   background-repeat: no-repeat;
   background-position: right 12px center; /* Dịch icon ra xa hơn */
   background-size: 20px;
@@ -1339,7 +1339,11 @@ label {
 .contact-columns {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0;
+}
+
+.contact-columns p {
+  margin: 0.35rem 0;
 }
 
 .contact-columns a {
