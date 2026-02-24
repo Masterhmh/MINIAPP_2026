@@ -1005,12 +1005,12 @@ window.fetchWeeklyData = async function(weekStr) {
       },
       options: {
         responsive: true, maintainAspectRatio: false,
-        layout: { padding: { top: 65 } },
+        layout: { padding: { top: 65, bottom: 10 } },
         barPercentage: FIXED_BAR_CONFIG.barPercentage,
         categoryPercentage: FIXED_BAR_CONFIG.categoryPercentage,
         maxBarThickness: FIXED_BAR_CONFIG.maxBarThickness,
         scales: {
-          x: { ticks: { autoSkip: false, maxRotation: 0, minRotation: 0, font: { family: 'Nunito, sans-serif', size: 11 } }, grid: { color: 'rgba(148,163,184,0.1)' } },
+          x: { ticks: { autoSkip: false, maxRotation: 45, minRotation: 45, font: { family: 'Nunito, sans-serif', size: 11 } }, grid: { color: 'rgba(148,163,184,0.1)' } },
           y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString('vi-VN') + 'đ', font: { family: 'Nunito, sans-serif' } }, grid: { color: 'rgba(148,163,184,0.1)' } }
         },
         plugins: {
