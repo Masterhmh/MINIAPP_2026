@@ -92,8 +92,11 @@
   </div>
   
   <!-- Nhóm nút chế độ lọc -->
-  <div class="input-group" style="justify-content: center; gap: 0.5rem; margin-bottom: 1rem;">
-    <button id="filterMonthlyBtn" class="filter-mode-btn active">
+  <div class="input-group" style="justify-content: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+    <button id="filterWeeklyBtn" class="filter-mode-btn active">
+      <i class="fas fa-calendar-week"></i><span> Theo tuần</span>
+    </button>
+    <button id="filterMonthlyBtn" class="filter-mode-btn">
       <i class="fas fa-calendar-day"></i><span> Theo tháng</span>
     </button>
     <button id="filterYearlyBtn" class="filter-mode-btn">
@@ -105,7 +108,7 @@
   </div>
   
   <!-- Dropdown chọn tháng đơn (chỉ hiện khi chọn Theo tháng) -->
-  <div class="input-group" id="singleMonthSelector" style="display: flex; margin-bottom: 1rem;">
+  <div class="input-group" id="singleMonthSelector" style="display: none; margin-bottom: 1rem;">
     <select id="singleMonth">
       <option value="1">Tháng 1</option><option value="2">Tháng 2</option><option value="3">Tháng 3</option>
       <option value="4">Tháng 4</option><option value="5">Tháng 5</option><option value="6">Tháng 6</option>
@@ -113,6 +116,18 @@
       <option value="10">Tháng 10</option><option value="11">Tháng 11</option><option value="12">Tháng 12</option>
     </select>
     <button id="fetchSingleMonthBtn"><i class="fas fa-filter"></i> Lọc</button>
+  </div>
+  
+  <!-- Bộ chọn tuần (chỉ hiện khi chọn Theo tuần) -->
+  <div id="weeklySelector" style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+    <div class="input-group" style="justify-content: center; gap: 0.5rem;">
+      <button id="quickLastWeekBtn" class="filter-mode-btn"><i class="fas fa-chevron-left"></i> Tuần trước</button>
+      <button id="quickThisWeekBtn" class="filter-mode-btn active"><i class="fas fa-calendar-check"></i> Tuần này</button>
+    </div>
+    <div class="input-group" style="justify-content: center; gap: 0.5rem; flex-wrap: wrap;">
+      <input type="week" id="weekPicker" style="flex: 1; min-width: 160px; padding: 8px 12px; border-radius: 10px; border: 1.5px solid var(--border-color); font-family: inherit; font-size: 0.9rem;">
+      <button id="fetchWeeklyDataBtn"><i class="fas fa-filter"></i> Lọc</button>
+    </div>
   </div>
   
   <!-- Nút Lọc cho chế độ Cả năm -->
