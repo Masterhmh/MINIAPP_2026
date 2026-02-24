@@ -888,10 +888,263 @@ function closeConfirmDeleteModal() {
    7. Tab 2: Biểu đồ (Charts Tab)
    Các hàm lấy và hiển thị biểu đồ thu chi theo tháng.
    ========================================================================== */
+
 /**
- * Lấy dữ liệu thu chi theo tháng từ API.
+ * Định dạng Date thành chuỗi YYYY-Www cho input[type=week].
+ * @param {Date} date - Đối tượng Date.
+ * @returns {string} Chuỗi dạng "2025-W05".
  */
-window.fetchMonthlyData = async function() {
+function formatWeekInput(date) {
+  // Tính ISO week number
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+}
+
+/**
+ * Tính ngày đầu tuần (Thứ 2) và ngày cuối tuần (Chủ nhật) từ chuỗi tuần ISO.
+ * @param {string} weekStr - Chuỗi dạng "2025-W05".
+ * @returns {{startDate: Date, endDate: Date, startDateStr: string, endDateStr: string}}
+ */
+function getWeekDateRange(weekStr) {
+  const [yearStr, weekPart] = weekStr.split('-W');
+  const year = parseInt(yearStr);
+  const week = parseInt(weekPart);
+
+  // Tìm ngày đầu tuần ISO (Thứ 2)
+  const simple = new Date(year, 0, 1 + (week - 1) * 7);
+  const dow = simple.getDay();
+  const ISOweekStart = new Date(simple);
+  if (dow <= 4) {
+    ISOweekStart.setDate(simple.getDate() - simple.getDay() + 1);
+  } else {
+    ISOweekStart.setDate(simple.getDate() + 8 - simple.getDay());
+  }
+  const ISOweekEnd = new Date(ISOweekStart);
+  ISOweekEnd.setDate(ISOweekStart.getDate() + 6);
+
+  // Format DD/MM/YYYY
+  function fmtDate(d) {
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  }
+
+  return {
+    startDate: ISOweekStart,
+    endDate: ISOweekEnd,
+    startDateStr: fmtDate(ISOweekStart),
+    endDateStr: fmtDate(ISOweekEnd)
+  };
+}
+
+/**
+ * Lọc và hiển thị dữ liệu tài chính theo tuần.
+ * Lấy giao dịch của tháng chứa tuần đó (hoặc 2 tháng nếu tuần vắt sang tháng mới),
+ * sau đó lọc phía client theo khoảng ngày.
+ * @param {string} weekStr - Chuỗi tuần dạng "2025-W05".
+ */
+window.fetchWeeklyData = async function(weekStr) {
+  const { startDate, endDate, startDateStr, endDateStr } = getWeekDateRange(weekStr);
+  const year = new Date().getFullYear();
+
+  // Kiểm tra không lọc tương lai
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
+  if (startDate > today) {
+    return showToast("Không thể chọn tuần trong tương lai!", "warning");
+  }
+
+  showLoading(true, 'tab2');
+  try {
+    // Xác định các tháng cần lấy (tuần có thể vắt qua 2 tháng)
+    const monthsNeeded = new Set();
+    monthsNeeded.add(startDate.getMonth() + 1);
+    monthsNeeded.add(endDate.getMonth() + 1);
+
+    // Lấy tất cả giao dịch các tháng liên quan
+    let allTransactions = [];
+    for (const month of monthsNeeded) {
+      const targetUrl = `${apiUrl}?action=getTransactionsByMonth&month=${month}&year=${year}&sheetId=${sheetId}`;
+      const finalUrl = proxyUrl + encodeURIComponent(targetUrl);
+      const response = await fetch(finalUrl);
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      allTransactions = allTransactions.concat(data);
+    }
+
+    // Lọc giao dịch theo khoảng ngày của tuần (so sánh ngày)
+    const weekTransactions = allTransactions.filter(item => {
+      if (!item.date || !item.date.includes('/')) return false;
+      const parts = item.date.split('/');
+      if (parts.length !== 3) return false;
+      const [d, m, y] = parts;
+      const txDate = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+      txDate.setHours(0, 0, 0, 0);
+      const start = new Date(startDate); start.setHours(0, 0, 0, 0);
+      const end = new Date(endDate); end.setHours(23, 59, 59, 999);
+      return txDate >= start && txDate <= end;
+    });
+
+    // Tính thu/chi theo từng ngày trong tuần để vẽ bar chart
+    const dayLabels = [];
+    const incomeByDay = [];
+    const expenseByDay = [];
+    const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + i);
+      const dayStr = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
+      const dayName = dayNames[d.getDay()];
+      dayLabels.push(`${dayName}\n${dayStr}`);
+
+      const dayTx = weekTransactions.filter(item => {
+        const parts = item.date.split('/');
+        return parseInt(parts[0]) === d.getDate() &&
+               parseInt(parts[1]) === (d.getMonth() + 1);
+      });
+
+      let inc = 0, exp = 0;
+      dayTx.forEach(t => {
+        if (t.type === 'Thu nhập') inc += t.amount;
+        else if (t.type === 'Chi tiêu') exp += t.amount;
+      });
+      incomeByDay.push(inc);
+      expenseByDay.push(exp);
+    }
+
+    // Tính tổng thu/chi
+    const totalIncome = incomeByDay.reduce((a, b) => a + b, 0);
+    const totalExpense = expenseByDay.reduce((a, b) => a + b, 0);
+    const totalBalance = totalIncome - totalExpense;
+
+    // Tính expense by category
+    const categoryMap = {};
+    weekTransactions.forEach(t => {
+      if (t.type === 'Chi tiêu') {
+        categoryMap[t.category] = (categoryMap[t.category] || 0) + t.amount;
+      }
+    });
+    const expenseCategoryData = Object.entries(categoryMap).map(([category, amount]) => ({ category, amount }));
+
+    // Render UI
+    const placeholderTab2 = document.getElementById('placeholderTab2');
+    const chartTitleTab2 = document.getElementById('chartTitleTab2');
+    const pieChartTitleTab2 = document.getElementById('pieChartTitleTab2');
+    const chartContainer = document.querySelector('#tab2 .chart-container');
+    if (placeholderTab2) placeholderTab2.style.display = 'none';
+    if (chartTitleTab2) {
+      chartTitleTab2.style.display = 'block';
+      chartTitleTab2.textContent = `TỔNG QUAN TUẦN (${startDateStr} – ${endDateStr})`;
+    }
+    if (pieChartTitleTab2) pieChartTitleTab2.style.display = 'block';
+    if (chartContainer) chartContainer.classList.add('show');
+
+    // Stats
+    const statsContainer = document.getElementById('monthlyStatsContainer');
+    statsContainer.innerHTML = `
+      <div class="stat-box income"><div class="title">Thu nhập</div><div class="amount">${totalIncome.toLocaleString('vi-VN')}đ</div></div>
+      <div class="stat-box expense"><div class="title">Chi tiêu</div><div class="amount">${totalExpense.toLocaleString('vi-VN')}đ</div></div>
+      <div class="stat-box balance"><div class="title">Số dư</div><div class="amount">${totalBalance.toLocaleString('vi-VN')}đ</div></div>
+    `;
+
+    // Bar chart theo ngày
+    const ctx = document.getElementById('monthlyChart').getContext('2d');
+    const monthlyChartElement = document.getElementById('monthlyChart');
+    if (window.monthlyChartInstance) window.monthlyChartInstance.destroy();
+
+    window.monthlyChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: dayLabels,
+        datasets: [{
+          label: 'Thu nhập',
+          data: incomeByDay,
+          backgroundColor: 'rgba(16, 185, 129, 0.8)',
+          borderColor: 'rgba(16, 185, 129, 1)',
+          borderWidth: 1
+        }, {
+          label: 'Chi tiêu',
+          data: expenseByDay,
+          backgroundColor: 'rgba(244, 63, 94, 0.8)',
+          borderColor: 'rgba(244, 63, 94, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 65 } },
+        barPercentage: FIXED_BAR_CONFIG.barPercentage,
+        categoryPercentage: FIXED_BAR_CONFIG.categoryPercentage,
+        maxBarThickness: FIXED_BAR_CONFIG.maxBarThickness,
+        scales: {
+          x: {
+            ticks: {
+              autoSkip: false,
+              maxRotation: 0,
+              minRotation: 0,
+              font: { family: 'Nunito, sans-serif', size: 11 }
+            },
+            grid: { color: 'rgba(148, 163, 184, 0.1)' }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              callback: value => value.toLocaleString('vi-VN') + 'đ',
+              font: { family: 'Nunito, sans-serif' }
+            },
+            grid: { color: 'rgba(148, 163, 184, 0.1)' }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: { label: context => `${context.dataset.label}: ${context.raw.toLocaleString('vi-VN')}đ` },
+            titleFont: { family: 'Nunito, sans-serif' },
+            bodyFont: { family: 'Nunito, sans-serif' }
+          },
+          datalabels: {
+            anchor: 'end',
+            align: 'end',
+            color: '#94A3B8',
+            font: { weight: 'bold', size: 9 },
+            rotation: -90,
+            formatter: (value) => {
+              if (value === 0) return '';
+              return value.toLocaleString('vi-VN') + 'đ';
+            }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+    monthlyChartElement.classList.add('show');
+
+    // Pie chart
+    drawMonthlyPieChart(expenseCategoryData);
+
+    // Cập nhật cachedChartData với thông tin tuần (dùng tháng của tuần cho category detail)
+    cachedChartData = {
+      monthlyData: [],
+      expenseCategoryData: expenseCategoryData,
+      startMonth: startDate.getMonth() + 1,
+      endMonth: endDate.getMonth() + 1,
+      isWeekly: true,
+      weekTransactions: weekTransactions
+    };
+    categoryDetailsCache = {};
+
+    showToast(`Đã lọc ${weekTransactions.length} giao dịch trong tuần ${startDateStr} – ${endDateStr}`, 'success');
+
+  } catch (error) {
+    showToast("Lỗi khi lấy dữ liệu theo tuần: " + error.message, "error");
+  } finally {
+    showLoading(false, 'tab2');
+  }
+};
   const startMonth = parseInt(document.getElementById('startMonth').value);
   const endMonth = parseInt(document.getElementById('endMonth').value);
   if (startMonth > endMonth) return showToast("Tháng bắt đầu phải nhỏ hơn hoặc bằng tháng kết thúc!", "warning");
@@ -1022,7 +1275,10 @@ function renderMonthlyDataUI(monthlyData, expenseCategoryData, startMonth, endMo
   const pieChartTitleTab2 = document.getElementById('pieChartTitleTab2');
   const chartContainer = document.querySelector('#tab2 .chart-container');
   if (placeholderTab2) placeholderTab2.style.display = 'none';
-  if (chartTitleTab2) chartTitleTab2.style.display = 'block';
+  if (chartTitleTab2) {
+    chartTitleTab2.style.display = 'block';
+    chartTitleTab2.textContent = 'TỔNG QUAN TÀI CHÍNH';
+  }
   if (pieChartTitleTab2) pieChartTitleTab2.style.display = 'block';
   if (chartContainer) chartContainer.classList.add('show');
 
@@ -1899,9 +2155,11 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Gán sự kiện cho các nút filter mode trong Tab 2
   const filterMonthlyBtn = document.getElementById('filterMonthlyBtn');
+  const filterWeeklyBtn = document.getElementById('filterWeeklyBtn');
   const filterYearlyBtn = document.getElementById('filterYearlyBtn');
   const filterCustomBtn = document.getElementById('filterCustomBtn');
   const singleMonthSelector = document.getElementById('singleMonthSelector');
+  const weeklySelector = document.getElementById('weeklySelector');
   const monthRangeSelector = document.getElementById('monthRangeSelector');
   
   // Gán sự kiện cho các nút filter mode trong Tab 4 (Search)
@@ -1913,7 +2171,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Hàm helper để set active button cho Tab 2
   function setActiveFilterButton(activeBtn) {
-    [filterMonthlyBtn, filterYearlyBtn, filterCustomBtn].forEach(btn => {
+    [filterMonthlyBtn, filterWeeklyBtn, filterYearlyBtn, filterCustomBtn].forEach(btn => {
       btn.classList.remove('active');
     });
     activeBtn.classList.add('active');
@@ -1931,20 +2189,34 @@ document.addEventListener('DOMContentLoaded', function() {
   filterMonthlyBtn.addEventListener('click', function() {
     setActiveFilterButton(this);
     singleMonthSelector.style.display = 'flex';
+    weeklySelector.style.display = 'none';
     document.getElementById('yearlyFilterBtn').style.display = 'none';
     monthRangeSelector.style.display = 'none';
     
     // Set giá trị mặc định là tháng hiện tại
     const currentMonth = new Date().getMonth() + 1;
     document.getElementById('singleMonth').value = currentMonth;
+  });
+  
+  // Xử lý nút "Theo tuần"
+  filterWeeklyBtn.addEventListener('click', function() {
+    setActiveFilterButton(this);
+    singleMonthSelector.style.display = 'none';
+    weeklySelector.style.display = 'flex';
+    document.getElementById('yearlyFilterBtn').style.display = 'none';
+    monthRangeSelector.style.display = 'none';
     
-    // Không tự động lọc, chờ người dùng chọn và nhấn nút "Lọc"
+    // Set giá trị mặc định là tuần hiện tại
+    const today = new Date();
+    const weekValue = formatWeekInput(today);
+    document.getElementById('weekPicker').value = weekValue;
   });
   
   // Xử lý nút "Cả năm" - lọc từ tháng 1 đến tháng hiện tại
   filterYearlyBtn.addEventListener('click', function() {
     setActiveFilterButton(this);
     singleMonthSelector.style.display = 'none';
+    weeklySelector.style.display = 'none';
     document.getElementById('yearlyFilterBtn').style.display = 'flex';
     monthRangeSelector.style.display = 'none';
     
@@ -1962,6 +2234,7 @@ document.addEventListener('DOMContentLoaded', function() {
   filterCustomBtn.addEventListener('click', function() {
     setActiveFilterButton(this);
     singleMonthSelector.style.display = 'none';
+    weeklySelector.style.display = 'none';
     document.getElementById('yearlyFilterBtn').style.display = 'none';
     monthRangeSelector.style.display = 'flex';
     
@@ -2002,6 +2275,40 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Lọc dữ liệu từ tháng 1 đến tháng hiện tại
     window.fetchMonthlyDataWithCache('yearly', 1, currentMonth);
+  });
+  
+  // Event cho nút "Lọc" trong chế độ "Theo tuần"
+  document.getElementById('fetchWeeklyDataBtn').addEventListener('click', function() {
+    const weekValue = document.getElementById('weekPicker').value;
+    if (!weekValue) {
+      showToast("Vui lòng chọn tuần cần xem!", "warning");
+      return;
+    }
+    window.fetchWeeklyData(weekValue);
+  });
+
+  // Nút "Tuần này"
+  document.getElementById('quickThisWeekBtn').addEventListener('click', function() {
+    document.getElementById('quickThisWeekBtn').classList.add('active');
+    document.getElementById('quickLastWeekBtn').classList.remove('active');
+    const weekValue = formatWeekInput(new Date());
+    document.getElementById('weekPicker').value = weekValue;
+  });
+
+  // Nút "Tuần trước"
+  document.getElementById('quickLastWeekBtn').addEventListener('click', function() {
+    document.getElementById('quickLastWeekBtn').classList.add('active');
+    document.getElementById('quickThisWeekBtn').classList.remove('active');
+    const lastWeek = new Date();
+    lastWeek.setDate(lastWeek.getDate() - 7);
+    const weekValue = formatWeekInput(lastWeek);
+    document.getElementById('weekPicker').value = weekValue;
+  });
+
+  // Khi người dùng tự chọn tuần thủ công thì bỏ active 2 nút quick
+  document.getElementById('weekPicker').addEventListener('change', function() {
+    document.getElementById('quickThisWeekBtn').classList.remove('active');
+    document.getElementById('quickLastWeekBtn').classList.remove('active');
   });
   
   // Xử lý nút "Cả năm" trong Tab 4 (Search)
@@ -2079,6 +2386,12 @@ document.getElementById('nextPageSearch').addEventListener('click', () => {
   if (startMonthInput && endMonthInput) {
     startMonthInput.value = 1;
     endMonthInput.value = currentMonth;
+  }
+  
+  // Thiết lập tuần mặc định cho bộ chọn tuần
+  const weekPickerInput = document.getElementById('weekPicker');
+  if (weekPickerInput) {
+    weekPickerInput.value = formatWeekInput(new Date());
   }
 
   const expenseMonthInput = document.getElementById('expenseMonth');
