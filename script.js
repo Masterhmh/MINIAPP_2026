@@ -1026,7 +1026,7 @@ window.fetchWeeklyData = async function(weekStr) {
 
     cachedChartData = { monthlyData: [], expenseCategoryData, startMonth: startDate.getMonth()+1, endMonth: endDate.getMonth()+1, isWeekly: true, weekTransactions };
     categoryDetailsCache = {};
-    showToast(`Đã lọc ${weekTransactions.length} giao dịch trong tuần ${startDateStr} – ${endDateStr}`, 'success');
+
   } catch (error) {
     showToast("Lỗi khi lấy dữ liệu theo tuần: " + error.message, "error");
   } finally {
@@ -1313,7 +1313,7 @@ function renderMonthlyDataUI(monthlyData, expenseCategoryData, startMonth, endMo
   const periodText = startMonth === endMonth
     ? `tháng ${startMonth}`
     : `tháng ${startMonth} – ${endMonth}`;
-  showToast(`Đã lọc ${totalCount} giao dịch trong ${periodText}`, 'success');
+
 }
 /**
  * Lấy dữ liệu chi tiêu theo phân loại cho khoảng tháng từ API.
