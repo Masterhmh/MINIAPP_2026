@@ -2040,3 +2040,34 @@ input[type="week"]::-webkit-datetime-edit {
 input[type="week"]::-webkit-datetime-edit-fields-wrapper {
   padding: 0;
 }
+
+/* ============================================================================
+   TAB 2 - KHOẢNG CÁCH ĐỒNG ĐỀU GIỮA CÁC HÀNG BỘ LỌC
+   Hàng 1→2, Hàng 2→3, Hàng 3→4 đều bằng nhau (1rem)
+   ============================================================================ */
+
+/* Hàng 1: Nhóm nút chế độ lọc */
+#tab2 > .input-group:first-of-type {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Hàng lọc chế độ (singleMonthSelector, yearlyFilterBtn, monthRangeSelector) */
+#singleMonthSelector,
+#yearlyFilterBtn,
+#monthRangeSelector {
+  margin-top: 1rem !important;
+  margin-bottom: 0 !important;
+}
+
+/* Hàng weeklySelector (chứa hàng 2 + hàng 3) */
+#weeklySelector {
+  margin-top: 1rem !important;
+  margin-bottom: 0 !important;
+  gap: 1rem !important;
+}
+
+/* Stats container (hàng 4) */
+#monthlyStatsContainer {
+  margin-top: 1rem !important;
+}
