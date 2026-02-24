@@ -617,6 +617,7 @@ button i {
 }
 
 input[type="date"],
+input[type="week"],
 input[type="text"],
 input[type="number"],
 select {
@@ -1994,5 +1995,42 @@ label {
   #backToCategoryBtn i {
     color: white !important;
     opacity: 1 !important;
+  }
+}
+
+/* ============================================================================
+   WEEKLY SELECTOR - Compact layout cho màn hình nhỏ
+   ============================================================================ */
+#weeklySelector {
+  gap: 0.4rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+#weeklySelector .input-group {
+  margin: 0 !important;
+  gap: 0.4rem !important;
+}
+
+input[type="week"] {
+  min-width: 0;
+  flex: 1;
+}
+
+input[type="week"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 1;
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 480px) {
+  #weeklySelector {
+    gap: 0.3rem !important;
+  }
+
+  input[type="week"] {
+    font-size: 0.8rem;
+    padding: 6px 10px;
+    height: 38px;
   }
 }
