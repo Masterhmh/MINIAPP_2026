@@ -2006,7 +2006,6 @@ label {
 
 /* Giảm margin input-group bên trong weeklySelector để khít như tab 1 */
 #weeklySelector {
-  display: flex !important;
   flex-direction: column !important;
   gap: 0.5rem !important;
   margin-bottom: 0 !important;
