@@ -2436,18 +2436,19 @@ document.getElementById('nextPageSearch').addEventListener('click', () => {
   populateSearchCategories();
   populateKeywordCategories();
 
-  // Khởi tạo hiển thị dropdown "Theo tháng" mặc định cho Tab 2 (Báo Cáo)
-  if (singleMonthSelector && monthRangeSelector) {
-    singleMonthSelector.style.display = 'flex';
-    document.getElementById('yearlyFilterBtn').style.display = 'none';
-    monthRangeSelector.style.display = 'none';
-    // Set giá trị mặc định là tháng hiện tại
-    const currentMonth = new Date().getMonth() + 1;
-    const singleMonthInput = document.getElementById('singleMonth');
-    if (singleMonthInput) {
-      singleMonthInput.value = currentMonth;
-    }
+  // Khởi tạo hiển thị mặc định Tab 2 (Báo Cáo) - "Theo tuần" là active
+  if (weeklySelector) {
+    weeklySelector.style.display = 'flex';
   }
+  if (singleMonthSelector) {
+    singleMonthSelector.style.display = 'none';
+  }
+  const yearlyFilterBtnEl = document.getElementById('yearlyFilterBtn');
+  if (yearlyFilterBtnEl) yearlyFilterBtnEl.style.display = 'none';
+  if (monthRangeSelector) monthRangeSelector.style.display = 'none';
+  // Set tháng mặc định cho dropdown tháng (dùng khi chuyển sang chế độ khác)
+  const singleMonthInput = document.getElementById('singleMonth');
+  if (singleMonthInput) singleMonthInput.value = new Date().getMonth() + 1;
 
   // Khởi tạo hiển thị dropdown "Theo tháng" mặc định cho Tab 4 (Search)
   if (searchMonthSelector && searchRangeSelector) {
