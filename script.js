@@ -1167,7 +1167,7 @@ function renderMonthlyDataUI(monthlyData, expenseCategoryData, startMonth, endMo
   const pieChartTitleTab2 = document.getElementById('pieChartTitleTab2');
   const chartContainer = document.querySelector('#tab2 .chart-container');
   if (placeholderTab2) placeholderTab2.style.display = 'none';
-  if (chartTitleTab2) chartTitleTab2.style.display = 'block';
+  if (chartTitleTab2) { chartTitleTab2.style.display = 'block'; chartTitleTab2.textContent = 'TỔNG QUAN TÀI CHÍNH'; }
   if (pieChartTitleTab2) pieChartTitleTab2.style.display = 'block';
   if (chartContainer) chartContainer.classList.add('show');
 
@@ -1307,6 +1307,13 @@ function renderMonthlyDataUI(monthlyData, expenseCategoryData, startMonth, endMo
 
   // Vẽ pie chart
   drawMonthlyPieChart(expenseCategoryData);
+
+  // Thông báo số giao dịch
+  const totalCount = monthlyData.reduce((sum, item) => sum + (item.count || 0), 0);
+  const periodText = startMonth === endMonth
+    ? `tháng ${startMonth}`
+    : `tháng ${startMonth} – ${endMonth}`;
+  showToast(`Đã lọc ${totalCount} giao dịch trong ${periodText}`, 'success');
 }
 /**
  * Lấy dữ liệu chi tiêu theo phân loại cho khoảng tháng từ API.
