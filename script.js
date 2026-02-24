@@ -30,9 +30,9 @@ let categoryDetailsCache = {};
 
 // ⚡ Cache cho 3 chế độ lọc Tab 2 (Hàng tháng, Hàng năm, Tùy chọn)
 let filterModeCache = {
-  monthly: null,    // Cache cho chế độ "Hàng tháng"
-  yearly: null,     // Cache cho chế độ "Hàng năm"
-  custom: {}        // Cache cho chế độ "Tùy chọn" (key: "startMonth-endMonth")
+  monthly: {},   // Cache cho chế độ "Hàng tháng" (key: "month")
+  yearly: {},    // Cache cho chế độ "Hàng năm" (key: "1-currentMonth")
+  custom: {}     // Cache cho chế độ "Tùy chọn" (key: "startMonth-endMonth")
 };
 
 // ⚡ Cache cho 3 chế độ tìm kiếm Tab 4 (Cả năm, Theo tháng, Khoảng thời gian)
@@ -713,8 +713,8 @@ async function saveTransaction(updatedTransaction) {
     cachedSearchResults = null;
     
     // ⚡ Clear cache Tab 2 (filter modes)
-    filterModeCache.monthly = null;
-    filterModeCache.yearly = null;
+    filterModeCache.monthly = {};
+    filterModeCache.yearly = {};
     filterModeCache.custom = {};
     
     const activeTab = document.querySelector('.tab-content.active')?.id;
@@ -760,8 +760,8 @@ async function addTransaction(newTransaction) {
     cachedSearchResults = null;
     
     // ⚡ Clear cache Tab 2 (filter modes)
-    filterModeCache.monthly = null;
-    filterModeCache.yearly = null;
+    filterModeCache.monthly = {};
+    filterModeCache.yearly = {};
     filterModeCache.custom = {};
     
     const activeTab = document.querySelector('.tab-content.active')?.id;
@@ -858,8 +858,8 @@ async function deleteTransaction(transactionId) {
       cachedSearchResults = null;
       
       // ⚡ Clear cache Tab 2 (filter modes)
-      filterModeCache.monthly = null;
-      filterModeCache.yearly = null;
+      filterModeCache.monthly = {};
+      filterModeCache.yearly = {};
       filterModeCache.custom = {};
       
       if (activeTab === 'tab1') {
@@ -1081,17 +1081,17 @@ window.fetchMonthlyData = async function() {
  * @param {number} endMonth - Tháng kết thúc
  */
 window.fetchMonthlyDataWithCache = async function(mode, startMonth, endMonth) {
-  // Tạo cache key cho chế độ custom
-  const customKey = `${startMonth}-${endMonth}`;
+  // Tạo cache key thống nhất cho tất cả chế độ
+  const cacheKey = `${startMonth}-${endMonth}`;
   
   // Kiểm tra cache
   let cachedData = null;
   if (mode === 'monthly') {
-    cachedData = filterModeCache.monthly;
+    cachedData = filterModeCache.monthly[cacheKey];
   } else if (mode === 'yearly') {
-    cachedData = filterModeCache.yearly;
+    cachedData = filterModeCache.yearly[cacheKey];
   } else if (mode === 'custom') {
-    cachedData = filterModeCache.custom[customKey];
+    cachedData = filterModeCache.custom[cacheKey];
   }
   
   // Nếu có cache, sử dụng luôn
@@ -1134,11 +1134,11 @@ window.fetchMonthlyDataWithCache = async function(mode, startMonth, endMonth) {
     
     // Lưu vào cache theo chế độ
     if (mode === 'monthly') {
-      filterModeCache.monthly = cacheObject;
+      filterModeCache.monthly[cacheKey] = cacheObject;
     } else if (mode === 'yearly') {
-      filterModeCache.yearly = cacheObject;
+      filterModeCache.yearly[cacheKey] = cacheObject;
     } else if (mode === 'custom') {
-      filterModeCache.custom[customKey] = cacheObject;
+      filterModeCache.custom[cacheKey] = cacheObject;
     }
     
     // Lưu vào cache chung để click legend hoạt động
