@@ -452,7 +452,7 @@ h1 {
   font-size: clamp(1rem, 3vw, 1.2rem);
   font-weight: 800;
   color: var(--primary-color);
-  margin: 2.5rem 0 1.5rem 0; /* ⚡ Tăng margin-top từ 2rem lên 2.5rem và margin-bottom từ 1rem lên 1.5rem */
+  margin: 2.5rem 0 0.5rem 0; /* ⚡ Giữ margin-top, giảm margin-bottom để tiêu đề sát nội dung hơn */
   text-align: center;
   letter-spacing: -0.3px;
   text-transform: uppercase;
