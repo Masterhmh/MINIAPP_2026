@@ -1103,12 +1103,13 @@ label {
 }
 
 #monthlyChart {
+  width: 100% !important; /* ⚡ Đảm bảo canvas co giãn đúng */
   height: auto !important;
-  max-width: 600px !important;
+  max-width: 100% !important; /* ⚡ Full width, không giới hạn để trục X không bị méo */
   min-height: 300px;
   max-height: 380px;
   display: none;
-  margin: 0 auto 0; /* ⚡ Bỏ margin-top để khoảng cách từ tiêu đề đến biểu đồ cột bằng biểu đồ tròn */
+  margin: 0 auto 0;
   background: var(--card-bg);
   border-radius: 16px;
   padding: 15px;
@@ -1317,7 +1318,7 @@ label {
 .info-card h1 {
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 0; /* ⚡ Bỏ margin-top thừa bên trong card */
   text-align: left;
 }
 
@@ -1326,6 +1327,10 @@ label {
   color: var(--text-secondary);
   line-height: 1.5;
   margin: 0.35rem 0;
+}
+
+.info-card p:last-child {
+  margin-bottom: 0; /* ⚡ Bỏ margin dưới phần tử cuối */
 }
 
 .info-card .custom-text {
