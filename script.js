@@ -2149,6 +2149,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
     
+    resetCategoryDetailView();
     // Sử dụng cache cho chế độ custom
     window.fetchMonthlyDataWithCache('custom', startMonth, endMonth);
   });
@@ -2157,6 +2158,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('fetchSingleMonthBtn').addEventListener('click', function() {
     const selectedMonth = parseInt(document.getElementById('singleMonth').value);
     
+    resetCategoryDetailView();
     // Lọc dữ liệu của tháng được chọn
     window.fetchMonthlyDataWithCache('monthly', selectedMonth, selectedMonth);
   });
@@ -2166,6 +2168,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth() + 1;
     
+    resetCategoryDetailView();
     // Lọc dữ liệu từ tháng 1 đến tháng hiện tại
     window.fetchMonthlyDataWithCache('yearly', 1, currentMonth);
   });
@@ -2174,6 +2177,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('fetchWeeklyDataBtn').addEventListener('click', function() {
     const weekValue = document.getElementById('weekPicker').value;
     if (!weekValue) return showToast("Vui lòng chọn tuần cần xem!", "warning");
+    resetCategoryDetailView();
     window.fetchWeeklyData(weekValue);
   });
 
@@ -2469,6 +2473,30 @@ document.addEventListener('DOMContentLoaded', function() {
 /* ==========================================================================
    CATEGORY DETAIL VIEW - Click vào legend để xem chi tiết
    ========================================================================== */
+
+/**
+ * Reset về view tổng quan nếu đang ở trang chi tiết category
+ * Gọi trước mỗi lần lọc dữ liệu mới để tránh người dùng phải bấm "Quay lại" thủ công
+ */
+function resetCategoryDetailView() {
+  const detailView = document.getElementById('categoryDetailView');
+  if (detailView && detailView.style.display !== 'none') {
+    detailView.style.display = 'none';
+    document.querySelector('.chart-container').style.display = 'flex';
+    currentCategoryDetailPage = 1;
+    cachedCategoryTransactions = null;
+    currentCategory = null;
+    currentCategoryData = null;
+    if (window.categoryMonthlyChartInstance) {
+      window.categoryMonthlyChartInstance.destroy();
+      window.categoryMonthlyChartInstance = null;
+    }
+    document.getElementById('categoryTransactionsContainer').innerHTML = '';
+    document.getElementById('paginationCategoryDetail').style.display = 'none';
+  }
+  // Xóa cache category khi đổi chế độ lọc để dữ liệu luôn mới
+  categoryDetailsCache = {};
+}
 let currentCategoryDetailPage = 1;
 const categoryDetailPerPage = 10;
 let cachedCategoryTransactions = null;
@@ -2602,57 +2630,12 @@ function backToCategoryList() {
 }
 
 /**
- * Lấy dữ liệu theo tháng (hoặc theo ngày nếu đang ở chế độ tuần) cho một category cụ thể
+ * Lấy dữ liệu theo tháng cho một category cụ thể
  */
 async function fetchCategoryMonthlyData(categoryName, categoryColor) {
   try {
     if (!cachedChartData) {
       throw new Error('Không có dữ liệu biểu đồ. Vui lòng lọc dữ liệu trước.');
-    }
-
-    // ⚡ FIX: Nếu đang ở chế độ lọc theo tuần, tổng hợp dữ liệu từ weekTransactions theo từng ngày
-    if (cachedChartData.isWeekly && cachedChartData.weekTransactions) {
-      const weekTx = cachedChartData.weekTransactions;
-      // Tạo map theo ngày (DD/MM) cho category này
-      const dayMap = {};
-      weekTx.forEach(t => {
-        if (t.category === categoryName && t.type === 'Chi tiêu') {
-          const [d, m] = t.date.split('/');
-          const key = `${d.padStart(2,'0')}/${m.padStart(2,'0')}`;
-          dayMap[key] = (dayMap[key] || 0) + t.amount;
-        }
-      });
-      // Tạo mảng 7 ngày trong tuần theo thứ tự
-      const dayNames = ['CN','T2','T3','T4','T5','T6','T7'];
-      // Lấy startDate từ tuần đang hiển thị (dựa vào weekTransactions dates)
-      // Tìm ngày đầu tiên trong weekTransactions hoặc dùng cachedChartData
-      // Rebuild từ startMonth/endMonth không đủ — ta sẽ suy ra từ dates có trong weekTransactions
-      const allDates = weekTx.map(t => {
-        const [d, m, y] = t.date.split('/');
-        return new Date(parseInt(y), parseInt(m)-1, parseInt(d));
-      });
-      // Nếu không có transaction nào, tạo mảng rỗng
-      if (allDates.length === 0) {
-        currentCategoryData = [];
-        return;
-      }
-      const minDate = new Date(Math.min(...allDates.map(d => d.getTime())));
-      // Tìm đầu tuần (T2)
-      const dow = minDate.getDay(); // 0=CN
-      const startDate = new Date(minDate);
-      if (dow === 0) startDate.setDate(minDate.getDate() - 6);
-      else startDate.setDate(minDate.getDate() - (dow - 1));
-
-      const result = [];
-      for (let i = 0; i < 7; i++) {
-        const d = new Date(startDate);
-        d.setDate(startDate.getDate() + i);
-        const key = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`;
-        const label = `${dayNames[d.getDay()]} ${key}`;
-        result.push({ month: label, amount: dayMap[key] || 0 });
-      }
-      currentCategoryData = result;
-      return;
     }
     
     const startMonth = cachedChartData.startMonth;
@@ -2715,13 +2698,7 @@ function drawCategoryMonthlyChart(data, categoryName, categoryColor) {
     window.categoryMonthlyChartInstance.destroy();
   }
   
-  // ⚡ FIX: Nếu ở chế độ tuần, data.month đã là chuỗi label (vd: "T2 23/02"), dùng thẳng
-  //         Nếu ở chế độ tháng, data.month là số, dùng "Tháng X"
-  const labels = data.map(item => 
-    (cachedChartData && cachedChartData.isWeekly) 
-      ? item.month 
-      : `Tháng ${item.month}`
-  );
+  const labels = data.map(item => `Tháng ${item.month}`);
   const amounts = data.map(item => item.amount);
   
   console.log('Labels:', labels);
@@ -2816,13 +2793,6 @@ async function fetchCategoryTransactions(categoryName) {
     if (!cachedChartData) {
       throw new Error('Không có dữ liệu biểu đồ. Vui lòng lọc dữ liệu trước.');
     }
-
-    // ⚡ FIX: Nếu đang ở chế độ lọc theo tuần, lọc trực tiếp từ weekTransactions đã có sẵn
-    if (cachedChartData.isWeekly && cachedChartData.weekTransactions) {
-      const categoryTransactions = cachedChartData.weekTransactions.filter(t => t.category === categoryName);
-      cachedCategoryTransactions = categoryTransactions;
-      return;
-    }
     
     const startMonth = cachedChartData.startMonth;
     const endMonth = cachedChartData.endMonth;
@@ -2894,13 +2864,7 @@ function displayCategoryTransactions(transactions) {
   const endMonth = cachedChartData ? cachedChartData.endMonth : null;
   
   let periodText = 'trong khoảng thời gian đã lọc';
-  if (cachedChartData && cachedChartData.isWeekly) {
-    // Lấy range ngày từ title biểu đồ hoặc tính lại từ weekTransactions
-    const titleEl = document.getElementById('chartTitleTab2');
-    const titleText = titleEl ? titleEl.textContent : '';
-    const match = titleText.match(/\((.+)\)/);
-    periodText = match ? `trong <strong>tuần ${match[1]}</strong>` : 'trong tuần đã lọc';
-  } else if (startMonth && endMonth) {
+  if (startMonth && endMonth) {
     if (startMonth === endMonth) {
       periodText = `trong <strong>tháng ${startMonth}</strong>`;
     } else {
