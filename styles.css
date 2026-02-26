@@ -1088,7 +1088,7 @@ label {
 .pie-chart-wrapper {
   width: 100%;
   max-width: 600px;
-  margin: 0.5rem auto;
+  margin: 0 auto;
   aspect-ratio: 1 / 1;
   position: relative;
   background: var(--card-bg);
@@ -1777,7 +1777,21 @@ label {
 #categoryMonthlyChart {
   width: 100% !important;
   height: 320px !important;
-  padding-top: 10px;
+  padding-top: 0; /* ⚡ Bỏ padding-top thừa */
+}
+
+/* Tiêu đề BIẾN ĐỘNG TÀI CHÍNH - điều chỉnh margin tại đây */
+#bienDongTitle {
+  margin-bottom: 0;
+}
+
+/* Container biểu đồ BIẾN ĐỘNG TÀI CHÍNH - điều chỉnh tại đây */
+#bienDongChartWrapper {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1.5rem;
 }
 
 #paginationCategoryDetail {
