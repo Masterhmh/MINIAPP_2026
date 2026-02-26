@@ -1072,7 +1072,7 @@ label {
   display: none; /* Ẩn ban đầu */
   flex-direction: column;
   align-items: center;
-  gap: 0; /* ⚡ Bỏ gap để khoảng cách tiêu đề → biểu đồ đồng bộ với các section khác */
+  gap: 0.5rem;
   text-align: center;
 }
 
@@ -1103,12 +1103,13 @@ label {
 }
 
 #monthlyChart {
+  width: 100% !important;
   height: auto !important;
-  max-width: 600px !important;
+  max-width: 100% !important; /* ⚡ Cho phép full width để nhãn không bị chồng */
   min-height: 300px;
   max-height: 380px;
   display: none;
-  margin: 0 auto 0; /* ⚡ Bỏ margin-top để khoảng cách từ tiêu đề đến biểu đồ cột bằng biểu đồ tròn */
+  margin: 0 auto 0;
   background: var(--card-bg);
   border-radius: 16px;
   padding: 15px;
@@ -1704,6 +1705,11 @@ label {
     max-width: 850px;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  /* ⚡ Biểu đồ cột full width trên desktop */
+  #monthlyChart {
+    max-height: 480px;
   }
 
   .custom-legend {
