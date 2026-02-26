@@ -1600,13 +1600,17 @@ label {
   .info-card h1 {
     font-size: 0.95rem;
     margin-bottom: 0.5rem;
-    margin-top: 0.75rem; /* Giảm margin-top cho h1 con */
+    margin-top: 0; /* ⚡ Bỏ margin-top thừa bên trong card ở mobile */
   }
 
   .info-card p {
     font-size: 0.82rem;
-    line-height: 1.5; /* Giảm line-height cho gọn hơn */
-    margin: 0.35rem 0; /* Giảm khoảng cách giữa các đoạn */
+    line-height: 1.5;
+    margin: 0.35rem 0;
+  }
+
+  .info-card p:last-child {
+    margin-bottom: 0; /* ⚡ Bỏ margin dưới phần tử cuối ở mobile */
   }
 
   .info-card i {
