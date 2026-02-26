@@ -1072,7 +1072,7 @@ label {
   display: none; /* Ẩn ban đầu */
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0; /* ⚡ Bỏ gap để khoảng cách tiêu đề → biểu đồ đồng bộ với các section khác */
   text-align: center;
 }
 
