@@ -1082,7 +1082,7 @@ label {
 
 .chart-container h1 {
   margin-bottom: 0.3rem;
-  margin-top: 0.5rem;
+  margin-top: 2.5rem; /* ⚡ Bằng với margin-top của h1 chung để cân đối */
 }
 
 .pie-chart-wrapper {
@@ -1104,7 +1104,7 @@ label {
   min-height: 300px;
   max-height: 380px;
   display: none;
-  margin: 0.5rem auto 1rem;
+  margin: 0.5rem auto 0; /* ⚡ Giảm margin-bottom về 0 để cân đối với section phía dưới */
   background: var(--card-bg);
   border-radius: 16px;
   padding: 15px;
