@@ -1097,14 +1097,18 @@ label {
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
+/* Tiêu đề biểu đồ cột - điều chỉnh margin tại đây */
+#chartTitleTab2 {
+  margin-top: 2.5rem;
+}
+
 #monthlyChart {
-  width: 100% !important;
   height: auto !important;
   max-width: 600px !important;
   min-height: 300px;
   max-height: 380px;
   display: none;
-  margin: 0.5rem auto 0; /* ⚡ Giảm margin-bottom về 0 để cân đối với section phía dưới */
+  margin: 0 auto 0; /* ⚡ Bỏ margin-top để khoảng cách từ tiêu đề đến biểu đồ cột bằng biểu đồ tròn */
   background: var(--card-bg);
   border-radius: 16px;
   padding: 15px;
