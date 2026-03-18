@@ -1423,32 +1423,27 @@ function drawMonthlyPieChart(data) {
   const customLegend = document.getElementById('monthlyCustomLegend');
   customLegend.innerHTML = '';
   
-  // Map icon cho từng danh mục (20 danh mục) - tên khớp chính xác
-  const categoryIcons = {
-    'Đi lại': 'fa-car',
-    'Ăn uống': 'fa-utensils',
-    'Mua sắm': 'fa-shopping-cart',
-    'Dịch vụ giải trí': 'fa-glass-cheers',
-    'Dịch vụ giặt ủi': 'fa-shirt',
-    'Hóa đơn': 'fa-file-invoice',
-    'Giải trí': 'fa-film',
-    'Y tế': 'fa-heart-pulse',
-    'Giáo dục': 'fa-graduation-cap',
-    'Gia đình': 'fa-house-user',
-    'Tiết kiệm': 'fa-piggy-bank',
-    'Công việc & Kinh doanh': 'fa-briefcase',
-    'Công nghệ & Thiết bị điện tử': 'fa-laptop',
-    'Tiệc tụng & Sự kiện': 'fa-icons',
-    'Dịch vụ sửa chữa & Bảo trì': 'fa-screwdriver-wrench',
-    'Làm đẹp & Chăm sóc cá nhân': 'fa-spa',
-    'Mua sắm online & TMĐT': 'fa-cart-shopping',
-    'Quà tặng & Đồ lưu niệm': 'fa-gift',
-    'Bảo hiểm & Tài chính cá nhân': 'fa-shield-halved',
-    'Sức khỏe & Đời sống': 'fa-heart',
-    'Dịch vụ tài chính & Ngân hàng': 'fa-building-columns',
-    'Nhà cửa': 'fa-house',
-    'Khác': 'fa-circle-question'
-  };
+  // Map icon cho từng danh mục (18 danh mục)
+const categoryIcons = {
+  'Ăn uống':                          'fa-utensils',
+  'Bảo hiểm & Tài chính cá nhân':     'fa-shield-halved',
+  'Công nghệ & Thiết bị điện tử':     'fa-laptop',
+  'Công việc & Kinh doanh':           'fa-briefcase',
+  'Đi lại':                           'fa-car',
+  'Dịch vụ giặt ủi':                  'fa-shirt',
+  'Dịch vụ sửa chữa & Bảo trì':      'fa-screwdriver-wrench',
+  'Giải trí':                         'fa-film',
+  'Giáo dục':                         'fa-graduation-cap',
+  'Gia đình':                         'fa-house-user',
+  'Hóa đơn & Tiện ích':               'fa-file-invoice',
+  'Làm đẹp & Chăm sóc cá nhân':      'fa-spa',
+  'Mua sắm':                          'fa-shopping-bag',
+  'Quà tặng & Sự kiện':              'fa-gift',
+  'Sức khỏe & Thể thao':             'fa-heart-pulse',
+  'Tiết kiệm & Đầu tư':              'fa-piggy-bank',
+  'Y tế':                             'fa-stethoscope',
+  'Khác':                             'fa-circle-question'
+};
   
   data.forEach((item, index) => {
     const percentage = ((item.amount / totalExpense) * 100).toFixed(1);
